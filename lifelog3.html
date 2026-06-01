@@ -42,8 +42,7 @@ body {
   min-height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
-  overflow-x: hidden;
-  position: relative;
+  overflow-x: clip;
 }
 button { cursor: pointer; font-family: inherit; }
 textarea, input { font-family: inherit; }
@@ -1111,6 +1110,11 @@ function parseNotionTweet(page) {
   };
 }
 
+// ─── Timeline scroll ──────────────────────────────────────────────────────────
+function scrollTimelineToBottom() {
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
 // ─── Timeline render ──────────────────────────────────────────────────────────
 function renderTimeline() {
   const tl = document.getElementById('timeline');
@@ -1177,6 +1181,7 @@ async function submitTweet() {
   };
   todayTweetsCache.push(optimistic);
   renderTimeline();
+  scrollTimelineToBottom();
 
   try {
     // 写真アップロード（先にやる）
@@ -1206,6 +1211,7 @@ async function submitTweet() {
     input.style.height = 'auto';
     removeImage();
     renderTimeline();
+    scrollTimelineToBottom();
     showToast('Notionに保存しました ✦', 'ok');
 
   } catch (e) {
