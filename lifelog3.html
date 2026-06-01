@@ -138,8 +138,16 @@ img { display: block; }
 
 /* ── Timeline ──────────────────────────────────────────────────────────── */
 /* ── Today sticky top (date + AI copy bar) ─────────────────────────────── */
+/*
+  【バグ修正 2026-06-01】
+  問題: 日付・AIコピーバーがスクロールしても追従しなかった
+  原因: .header が sticky top:0 で固定されているのに
+        .today-sticky-top も top:0 だったためheaderの裏に隠れていた
+  修正: top を var(--header-h) に変更し、JSのResizeObserverで
+        headerの実際の高さを --header-h CSS変数としてリアルタイム反映する
+*/
 .today-sticky-top {
-  position: sticky; top: 0; z-index: 80;
+  position: sticky; top: var(--header-h, 90px); z-index: 80;
   background: rgba(244,242,249,0.96);
   backdrop-filter: blur(20px) saturate(1.4);
   border-bottom: 1px solid var(--border);
@@ -2082,6 +2090,27 @@ function showToast(msg, type = '') {
 }
 
 // ─── Boot ──────────────────────────────────────────────────────────────────────
+/*
+  【バグ修正 2026-06-01】
+  headerの実際の高さをCSS変数 --header-h にセットする。
+  これにより .today-sticky-top の sticky top がheaderの直下に吸着する。
+  ResizeObserver を使うことでフォント読み込み後やリサイズ時にも追従。
+*/
+function updateHeaderHeight() {
+  const h = document.querySelector('.header');
+  if (h) {
+    document.documentElement.style.setProperty('--header-h', h.offsetHeight + 'px');
+  }
+}
+// 初回セット（DOM構築直後）
+updateHeaderHeight();
+// フォント・レイアウト確定後に再計測
+window.addEventListener('load', updateHeaderHeight);
+// headerのリサイズに追従（キーボード表示など）
+if (window.ResizeObserver) {
+  new ResizeObserver(updateHeaderHeight).observe(document.querySelector('.header') || document.body);
+}
+
 init();
 </script>
 
