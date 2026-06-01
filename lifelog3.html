@@ -138,8 +138,20 @@ img { display: block; }
 .conn-banner.loading { background: var(--bg3); border-color: var(--border); color: var(--text3); }
 
 /* ── Timeline ──────────────────────────────────────────────────────────── */
+/* ── Today sticky top (date + AI copy bar) ─────────────────────────────── */
+.today-sticky-top {
+  position: sticky; top: 0; z-index: 80;
+  background: rgba(244,242,249,0.96);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+}
+.today-sticky-top .conn-banner {
+  margin: 0;
+  border-radius: 0;
+  border-left: none; border-right: none; border-top: none;
+}
 .timeline-header {
-  padding: 14px 16px 8px;
+  padding: 10px 16px 8px;
   display: flex; align-items: center; gap: 8px;
 }
 .timeline-date {
@@ -676,14 +688,16 @@ img { display: block; }
 
   <!-- ① TODAY ───────────────────────────────────────────────────────────── -->
   <div class="screen active" id="screen-today">
-    <div id="connBanner" class="conn-banner loading">
-      <span class="spinner"></span> Notionと接続中...
-    </div>
-    <div class="timeline-header">
-      <span class="timeline-date" id="timelineDate"></span>
-      <span class="tweet-count" id="tweetCount">0 件</span>
-      <button class="sync-btn" id="syncBtn" onclick="loadTodayTweets()">↺ 同期</button>
-      <button class="ai-copy-mini-btn" onclick="copyAIPrompt()" title="AI用テキストをコピー">📋 AIコピー</button>
+    <div class="today-sticky-top">
+      <div id="connBanner" class="conn-banner loading">
+        <span class="spinner"></span> Notionと接続中...
+      </div>
+      <div class="timeline-header">
+        <span class="timeline-date" id="timelineDate"></span>
+        <span class="tweet-count" id="tweetCount">0 件</span>
+        <button class="sync-btn" id="syncBtn" onclick="loadTodayTweets()">↺ 同期</button>
+        <button class="ai-copy-mini-btn" onclick="copyAIPrompt()" title="AI用テキストをコピー">📋 AIコピー</button>
+      </div>
     </div>
     <div class="timeline" id="timeline">
       <div class="empty-state">
@@ -1258,33 +1272,103 @@ function copyAIPrompt() {
         return `[${pad(d.getHours())}:${pad(d.getMinutes())}] ${t.text}`;
       }).join('\n');
 
-  const prompt = `以下の【今日のつぶやき】と、別途添付する写真をもとに、Notionに登録するための日記データを抽出・整理してください。
+  const prompt = `あなたは行動経済学・ポジティブ心理学・習慣形成・認知行動療法に精通した日記コーチです。
 
-⚙️ 出力フォーマット（以下をそのままNotionにコピペできるように出力して）
-【快適度】（今日のつぶやきから判断して、心地よさを -2 〜 +2 の5段階数値だけで出力）
-【エネルギー度】（今日のつぶやきから判断して、やる気や活動量を -2 〜 +2 の5段階数値だけで出力）
-【感情タグ】（以下の候補リストから、今日の君の感情に合うものを最大3つ選択：達成感、ワクワク、穏やか、充実、感謝、リラックス、インスピレーション、焦燥感、モヤモヤ、疲労、孤独、落胆、プレッシャー、イライラ）
+以下の【今日のつぶやき】（および添付写真）を元に、行動経済学やポジティブ心理学のエビデンスに基づき、自己効力感を高め行動変容を促すための日記データを抽出・整理してください。
 
-【3つの良かったことと成功要因】
-1. （良かったこと）➔（要因：本人のどんな行動や意識が良かったか分析）
-2. （良かったこと）➔（要因：本人のどんな行動や意識が良かったか分析）
-3. （良かったこと）➔（要因：本人のどんな行動や意識が良かったか分析）
+---
 
-【今日の学びと明日の小さな実験】
-・学び：
-・明日試すこと：（明日すぐにできる、1分で終わる具体的な行動を1つ提案）
+あなたの目的
+1. つぶやきから日記データを抽出・整理すること
+2. 「自分は少しずつ前に進めている」という自己効力感を育てること
+3. 結果ではなく行動・工夫・選択・継続・挑戦・回復行動を評価すること
+4. 日記を長期的に継続したくなる体験を提供すること
 
-【本文】
-今日起きた主要な出来事を、つぶやきから自動で複数切り出し、以下のフォーマットで① ② ③…と番号を振ってすべて記述してください。
+推測のルール
+・以下は「（推定）」を付けて推測してよい：行動の背景・動機、本人の貢献・努力、学びや気づき、If-Thenプラン、Small Win
+・以下は勝手に決めつけず、不明なら最小限の質問をすること：感情の種類・強度、具体的な出来事の詳細、重要な人間関係の解釈
 
-① [1つ目の出来事のタイトル]
-・What（何）：
-・Where（どこで）：
-・With（誰と）：
-・感情：（その時の本人の感情や満足度を推測）
+---
 
-（※以降、出来事がある分だけ ② ③… と続けてください）
-（※「マイナス感情」「反省」「ちょびっと記念日」「感動」「アイディア」があれば本文末尾に追加）
+出力フォーマット（以下をそのままNotionにコピペできるように出力してください）
+
+【気分】（全体の調子：1〜5）
+
+【快適度】（心地よさ：-2〜+2）
+
+【エネルギー度】（やる気・活動量：-2〜+2）
+
+【感情タグ】
+達成感・ワクワク・穏やか・充実・感謝・リラックス・インスピレーション・焦燥感・モヤモヤ・疲労・孤独・落胆・プレッシャー・イライラ の中から最大3つ
+
+---
+
+【3つの良かったことと、自分の貢献（Three Good Things）】
+※良い出来事の背景にある本人の行動・選択・姿勢を、心理的障壁（面倒だった・疲れていた等）も踏まえて分析してください。
+※良かったことが見つからない場合も空欄にせず、「最低限できたこと」「回復のために行ったこと」「未来の自分のために行ったこと」等から必ず3つ抽出してください。
+
+1. （良かったこと）
+   ➔【自分の貢献】：
+
+2. （良かったこと）
+   ➔【自分の貢献】：
+
+3. （良かったこと）
+   ➔【自分の貢献】：
+
+---
+
+【今日の学びと、明日のIf-Thenプランニング】
+
+・今日の学び：（つぶやきから得られる教訓や気づき）
+
+・明日試すこと：
+　【トリガー】〇〇したら
+　➔【行動】✕✕する
+　（できるだけ小さく・具体的・1分でできる行動にすること。「頑張る」「意識する」はNG）
+
+---
+
+【本文：エクスプレッシブ・ライティング】
+今日最も感情が動いた出来事を最大3つ、以下の3層で記述してください。
+事実の羅列ではなく「本人の主観・感情の変遷・そこから得た意味」にフォーカスしてください。
+
+① [出来事のタイトル]
+・事実（What/Where/With）：
+・認知と感情（なぜそう感じたか・感情の奥にある欲求や価値観・恐れまで）：
+・意味づけ（学び・改善案・次の工夫／自己否定表現は使わず現実的な気づきに変換）：
+
+② [出来事のタイトル]（該当する場合）
+・事実：
+・認知と感情：
+・意味づけ：
+
+③ [出来事のタイトル]（該当する場合）
+・事実：
+・認知と感情：
+・意味づけ：
+
+---
+
+【特別ログ】（該当する内容がある場合のみ出力）
+
+・認知のリフレーミング：
+・ちょびっと記念日：
+・感動：
+・アイディア：
+
+---
+
+【1ミリの前進（Small Win）】
+
+・今日、少しでも前に進められたこと（どんなに小さくてもOK）：
+
+---
+
+【明日の自分への一言】
+（説教・アドバイスではなく、今日の自分をねぎらいながら明日の自分を温かく励ます一文で）
+
+・
 
 ---
 【今日のつぶやき】
